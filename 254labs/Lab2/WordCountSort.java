@@ -1,0 +1,235 @@
+//b) Selection sort is O(n^2), so with 1 000 000 elements, could guess run time is (1000000)^2 seconds.  That is 1x(10^12) seconds.
+//	Could get more accurate with n^2/2 + n/2 + ... but (1000000)^2 seconds approximates worst case
+import java.io.File;
+import java.util.Scanner;
+import java.util.Map.Entry;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Comparator;
+
+public class WordCountSort {
+
+	public static void selectionSort(String[] data) {
+		int n = data.length;			//1 op
+		for (int i = 0; i < n - 1; i++) {	//(n-1) ops
+			int minIndex = i;		//(n-1) ops
+			for (int j = i + 1; j < n; j++) { //roughly n^2 ops (((n^2)/2 + n/2) ops)
+				if (data[minIndex].compareTo(data[j]) < 0) { //3n^2 ops
+					minIndex = j; //0 to 3n^2
+				}
+			}
+			if (i != minIndex) //This section becomes irrelevant at high data sets, ignored for time complexity analysis
+				swap(data, minIndex, i);
+
+		}
+	}
+
+	/*	
+	 Ops: 1 + (n-1) + (n-1) + (n^2) + 3(n^2) + 3(n^2)
+		= 1 -1 -1 + n + n + n^2 + 3n^2 + 3n^2
+		= -1 + 2n + 7n^2
+		= 7n^2 + 2n - 1
+		7n^2 + 2n - 1 <= c * O(n^2)
+		true when c = 10 and n0 = 1
+		Therefore, Selection Sort is O(n^2)
+	*/
+
+	public static void insertionSort(String[] data) {
+		int n = data.length;		//1 op
+		for (int k = 1; k < n; k++) {	//n ops
+			String cur = data[k];	//2n ops
+			int j = k;		//n ops
+			while (j > 0 && data[j - 1].compareTo(cur) > 0) {//0 to n(k)[roughly n^2] times
+				data[j] = data[j - 1];	//3 * n^2
+				j--;			//n^2
+			}
+			data[j] = cur;		//2n ops
+		}
+	}
+	
+	/*
+	Ops: 1 + n + 2n + n + n^2 + 3n^2 + n^2 + 2n
+		= 1 + 6n + 5n^2 
+		= 5n^2 + 6n + 1
+		5n^2 + 6n + 1 <= c * O(n^2)
+		true when c = 12 and n0 = 1
+		Therefore, Insertion Sort is O(n^2)
+	*/
+
+
+	/** Merge two strings. See the textbook for explanation. **/
+	public static void merge(String[] S1, String[] S2, String[] S) {
+		int i = 0, j = 0; //1 op
+		while (i + j < S.length) { //n1 + n2 ops, n1 is size of S1, n2 is size of S2
+			if (j == S2.length || (i < S1.length && S1[i].compareTo(S2[j]) < 0)) //3 ops
+				S[i + j] = S1[i++]; 	//2 ops
+			else
+				S[i + j] = S2[j++];	//2 ops
+		}
+	}
+
+	public static void mergeSort(String[] S) {
+		int n = S.length;
+		if (n < 2)
+			return;
+		int mid = n / 2;
+		// partition the string into two strings
+		String[] S1 = Arrays.copyOfRange(S, 0, mid);
+		String[] S2 = Arrays.copyOfRange(S, mid, n);
+		mergeSort(S1);
+		mergeSort(S2);
+		merge(S1, S2, S);
+	}
+
+	/*
+	Recurrence Relation: T(n) = T(n/2) + T(n/2) + 2n
+				  = 2T(n/2) + n
+
+			Guess T(n) is O(nlogn)
+			Then there exists c where T(n) <= c * nlogn
+			T(n) = 2T(n/2) + n <= 2[c * (n/2) * log(n/2)] + n
+					    = [cn * (logn - log2)] + n
+					    = [cn * (logn - 1)] + n
+					    = cnlogn - cn + n
+					    = cnlogn - n(c-1)
+					   <= c * nlogn	   When c >= 1
+			Thus, T(n) is O(nlogn)
+	*/
+
+
+	static int partition(String arr[], int low, int high) { 
+		String pivot = arr[low];  
+        	int i = low - 1; // index below smallest element
+		int j = high + 1; //index above highest 
+		while(true){        
+			do{
+				i++;
+			}while(arr[i].compareTo(pivot) < 0); //Loop up until element greater than pivot is found
+			do{
+				j--;
+			}while(arr[j].compareTo(pivot) > 0); //Loop down until element less then pivot is found
+
+			if(i >=j){
+				return j;	//If indexes pass each other, return j
+			}
+
+			swap(arr, i, j);
+		}                
+    	} 
+  
+  	
+ 	static void quickSort(String arr[], int low, int high){
+		if (low < high) { 
+            		int p = partition(arr, low, high);
+		        quickSort(arr, low, p); 
+        	    	quickSort(arr, p+1, high); 
+     	   	} 
+ 	   } 
+  
+
+
+    	/* A utility function to print array of size n */
+    	static void printArray(String arr[]) 
+    	{ 
+        	int n = arr.length; 
+        	for (int i=0; i<n; ++i) 
+            	System.out.print(arr[i]+" "); 
+        	System.out.println(); 
+    	} 
+
+	private static void swap(String[] array, int i, int j) {
+		String tmp = array[i];
+		array[i] = array[j];
+		array[j] = tmp;
+	}
+
+
+    
+
+	public static Entry<String, Integer> count_ARRAY_SORT(String[] tokens, String sortMethod) {
+		int CAPACITY = 1000000;
+		String[] words = new String[CAPACITY];
+		int[] counts = new int[CAPACITY];
+		if (sortMethod.equals("SELECT"))
+			selectionSort(tokens);
+		else if (sortMethod.equals("INSERT"))
+			insertionSort(tokens);
+		else if (sortMethod.equals("MERGE"))
+			mergeSort(tokens);
+		else if (sortMethod.equals("JAVA"))
+			Arrays.sort(tokens);
+		else if (sortMethod.equals("QUICK"))
+			quickSort(tokens, 0, tokens.length - 1);
+		else
+			System.out.println(sortMethod + " sorting method does not exist.");
+
+		int j = 0, k = 0;
+		int len = tokens.length;
+		while (j < len - 1) {
+			int duplicates = 1;
+			while (j < len - 2 & tokens[j].equals(tokens[j + 1])) {
+				j++;
+				duplicates++;
+			}
+
+			words[k] = tokens[j];
+			counts[k] = duplicates;
+			j++;
+			k++;
+		}
+
+		/** get the max count **/
+		int maxCount = 0;
+		String maxWord = "";
+		for (int i = 0; i < CAPACITY & words[i] != null; i++) {
+			if (counts[i] > maxCount) {
+				maxWord = words[i];
+				maxCount = counts[i];
+			}
+		}
+		return new AbstractMap.SimpleEntry<String, Integer>(maxWord, maxCount);
+	}
+
+	static String[] readText(String PATH) throws Exception {
+		Scanner doc = new Scanner(new File(PATH)).useDelimiter("[^a-zA-Z]+");
+		// tokenize text. any characters other than English letters(a-z and A-Z
+		// ) are delimiters.
+		int length = 0;
+		while (doc.hasNext()) {
+			doc.next();
+			length++;
+		}
+
+		String[] tokens = new String[length];
+		Scanner s = new Scanner(new File(PATH)).useDelimiter("[^a-zA-Z]+");
+		length = 0;
+		while (s.hasNext()) {
+			tokens[length] = s.next().toLowerCase();
+			length++;
+		}
+		doc.close();
+		return tokens;
+	}
+
+	public static void main(String[] args) throws Exception {
+		String PATH = "../text/dblp";
+		String[] METHODS = {"QUICK",  "MERGE","JAVA" };
+		String[] DATASETS = { "200", "500", "1k", "5k", "10k", "100k", "1m", "" };
+
+		String[] tokens;
+		// run the experiments on different data sets
+		for (int j = 0; j < 8; j++) {
+			// run the experiments using different methods
+			System.out.println("Data is " + DATASETS[j]);
+			for (int i = 0; i < 3; i++) {
+				tokens = readText(PATH + DATASETS[j] + ".txt");
+				long startTime = System.currentTimeMillis();
+				Entry<String, Integer> entry = count_ARRAY_SORT(tokens, METHODS[i]);
+				long endTime = System.currentTimeMillis();
+				String time = String.format("%12d", endTime - startTime);
+				System.out.println(METHODS[i] + " method\t time=" + time + ". Most popular word is " + entry.getKey()
+						+ ":" + entry.getValue());
+			}
+		}
+	}
+}
